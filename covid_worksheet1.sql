@@ -57,8 +57,9 @@ From coviddeaths
 order by location
 
 ----Positivity rate (total number of positive test results / total number of both positive and negative test results)
-Select Location, date, new_tests_smoothed, new_cases_smoothed, cast(new_cases_smoothed as float) / nullif(cast(new_tests_smoothed as float),0)   as positivityRate --, positive_rate
+Select Location, date, new_tests_smoothed, new_cases_smoothed, cast(new_cases_smoothed as float) / nullif(cast(new_tests_smoothed as float),0) * 100  as positivityRate --, positive_rate
 From dbo.[owid-covid-data]
+where location = 'United States'
 order by location
 
 --vaccination 
@@ -79,11 +80,11 @@ Group by Location, Population
 order by PercentPopulationInfected desc
 
 --Locations(countries) with Highest infection rate without the rows that contain continents details
-Select Location, Population, MAX(cast(total_cases as float)) as HighestInfectionCount,  max((cast(total_cases as float)) / nullif(cast(population as float),0)) * 100 as PercentPopulationInfected
+Select date, Location, Population, MAX(cast(total_cases as float)) as HighestInfectionCount,  max((cast(total_cases as float)) / nullif(cast(population as float),0)) * 100 as PercentPopulationInfected
 From coviddeaths
 where continent !=  ' ' 
-Group by Location, Population
-order by PercentPopulationInfected desc
+Group by date, Location, Population
+order by date asc
 
 --Locations(countries) with Highest deaths 
 Select Location, population, MAX(cast(Total_deaths as int)) as TotalDeathCount
@@ -134,14 +135,24 @@ from coviddeaths
 where location like '%income%'
 group by location
 
-
-select SUM(distinct(cast(population as float))) as total_population, SUM(cast(new_deaths as float)) as total_deaths, SUM(cast(new_deaths as float))/SUM(cast(New_Cases as float)) as deathVScases
+--deathVsCases
+select SUM(distinct(cast(population as float))) as total_population, SUM(cast(new_deaths as float)) as total_deaths, SUM(cast(New_Cases as float)) as Total_cases, SUM(cast(new_deaths as float))/SUM(cast(New_Cases as float)) as deathVScases
 from coviddeaths
 where continent =  ' '  and location = 'world'
 
+--deathVspopulation
 select SUM(distinct(cast(population as float))) as total_population, SUM(cast(new_deaths as float)) as total_deaths, SUM(cast(new_deaths as float)) / SUM(distinct(cast(population as float))) as Percentage_dead
 from coviddeaths
 where continent =  ' '  and location = 'world'
+
+--world complete : incidence rate = cases/population. fatality rate: death/cases
+select SUM(distinct(cast(population as float))) as total_population, SUM(cast(New_Cases as float)) as Total_cases, SUM(cast(new_deaths as float)) as total_deaths,  SUM(cast(New_Cases as float))/SUM(distinct(cast(population as float))) as Incidence_rate
+	,SUM(cast(new_deaths as float))/SUM(cast(New_Cases as float)) as Fatality_rate,SUM(distinct(cast(new_people_vaccinated_smoothed as float))) as people_vaccinated
+	, SUM(distinct(cast(new_people_vaccinated_smoothed as float))) / SUM(distinct(cast(population as float))) *100 as VaccinatedPopulation
+from dbo.[owid-covid-data]
+where continent =  ' '  and location = 'world'
+
+
 
 
 --world vaccination

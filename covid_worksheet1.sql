@@ -1,3 +1,6 @@
+/* Covid 19 Data Exploration project using SQL: Using Joins, CTE's, Temp Tables, Windows Functions, Aggregate Functions, Creating Views, Converting Data Types*/
+
+
 Use COVID
 
 --Number of columns in each table:
